@@ -21,6 +21,7 @@ export default class RecordScreen extends React.Component {
     header: null,
   };
   state = {
+   cacheURL: 'https://firebasestorage.googleapis.com/v0/b/longevity-4653f.appspot.com/o/videos%2FLongGev_Content_Ketogenic.mp4?alt=media&token=e667f343-618f-45a8-8460-227a210f6a4c',
    cacheURL: null,
    backgroundOpacity: new Animated.Value(0),
    hasCameraPermission: null,
@@ -52,7 +53,7 @@ export default class RecordScreen extends React.Component {
     this.recording = true;
     const captureStarted = new Date().getTime();
     await this._cameraRef.recordAsync({
-      maxDuration: 5,
+      maxDuration: 10,
       //quality: Camera.Constants.VideoQuality['480p'],
     }).then(data => {
       this.setState({cacheURL: data.uri})
@@ -121,7 +122,8 @@ export default class RecordScreen extends React.Component {
               'URL': downloadUrl,
               'name': name,
               'title': this.state.text,
-              'when': new Date().getTime()
+              'hashtags': this.state.hashtags,
+              'createdAt': new Date().getTime()
             }).then(r => resolve(r), e => reject(e))
 
           })
@@ -173,8 +175,17 @@ fadeInVideo = () => {
         </Animated.View>
 
         {this.state.progress === 0 ?
-        <View>
-          <TextInput multiline={true} blurOnSubmit={true} clearTextOnFocus={true} style={{fontSize: 24, backgroundColor: 'rgba(0,0,0,0.5)', top: height*0.5, color: '#ccffff'}} onChangeText={(text) => this.setState({text: text})} value={this.state.text} />
+        <View style={{flexDirection: 'column', justifyContent: 'space-around', height:height,}}>
+          <TextInput multiline={true} blurOnSubmit={true} style={{fontSize: 36, borderRadius: 3, backgroundColor: 'rgba(0,0,0,0.5)', color: '#ccffff'}} onChangeText={(text) => this.setState({text: text})} value={this.state.text} />
+          <TextInput multiline={true} blurOnSubmit={true} style={{fontSize: 36, borderRadius: 3, backgroundColor: 'rgba(0,0,0,0.5)', color: '#ccffff'}} onChangeText={(hashtags) => this.setState({hashtags: hashtags})} value={this.state.hashtags} />
+          <TouchableOpacity style={{width: width*0.9, height: 50, backgroundColor: '#0099cc', borderRadius: 5,
+          flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center' }} onPress={() => {this.uploadVideo()}}>
+          <Text
+            style={{ fontSize: 18,  color: '#fff' }}>
+            {' '}Upload Video{' '}
+          </Text>
+          </TouchableOpacity>
         </View>
         : null }
 

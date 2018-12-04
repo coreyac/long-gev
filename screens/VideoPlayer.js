@@ -35,9 +35,8 @@ export default class VideoPlayer extends React.Component {
    this.setState({
      loaded: true
    });
-   const videoDetails = this.props.path.split(',', 2)
-   //console.warn(videoDetails[1])
-   this.setState({url: videoDetails[0], title: videoDetails[1]})
+   //console.log(this.props.path.URL)
+   this.setState({url: this.props.path.URL, title: this.props.path.title})
  }
 
  // this is called from the video::onLoad()

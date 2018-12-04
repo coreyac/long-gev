@@ -8,20 +8,22 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Swiper from 'react-native-swiper';
 import * as firebase from 'firebase';
 import { WebBrowser } from 'expo';
 var Dimensions = require('Dimensions');
 import { MonoText } from '../components/StyledText';
 import VideoPlayer from './VideoPlayer';
 var {width, height} = Dimensions.get('window');
- const videoUrls = ["https://firebasestorage.googleapis.com/v0/b/longevity-4653f.appspot.com/o/videos%2FLongGev_Content_Ketogenic.mp4?alt=media&token=e667f343-618f-45a8-8460-227a210f6a4c", "https://player.vimeo.com/external/279994968.hd.mp4?s=a472af16ab5cb4886c7a8e50f19a729fd6fc92eb&profile_id=175&oauth2_token_id=57447761", "https://player.vimeo.com/external/265473491.hd.mp4?s=063cf2e7a64283730c49ff3b120ddc8b3f560206&profile_id=175&oauth2_token_id=57447761"]
+ //const videoUrls = ["https://firebasestorage.googleapis.com/v0/b/longevity-4653f.appspot.com/o/videos%2FLongGev_Content_Ketogenic.mp4?alt=media&token=e667f343-618f-45a8-8460-227a210f6a4c", "https://player.vimeo.com/external/279994968.hd.mp4?s=a472af16ab5cb4886c7a8e50f19a729fd6fc92eb&profile_id=175&oauth2_token_id=57447761", "https://player.vimeo.com/external/265473491.hd.mp4?s=063cf2e7a64283730c49ff3b120ddc8b3f560206&profile_id=175&oauth2_token_id=57447761"]
 
 export default class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       scrollPosition: 0,
-      videos: null
+      allVideos: null,
+      filteredVideos: null,
     };
   }
 
@@ -29,7 +31,13 @@ export default class HomeScreen extends React.Component {
     header: null,
   };
 
-  renderVideoItem = ({ item }) => {
+  renderAllItems = ({ item }) => {
+		return (
+      <View style={{height: height}}><VideoPlayer title= {'You\'re going to live longer!'} path={item} /></View>
+		);
+	}
+
+  renderFilteredItems = ({ item }) => {
 		return (
       <View style={{height: height}}><VideoPlayer title= {'You\'re going to live longer!'} path={item} /></View>
 		);
@@ -41,31 +49,50 @@ export default class HomeScreen extends React.Component {
   }
 
   async componentDidMount() {
-    firebase.database().ref(`videos/`).on('value', videos => {
-      const videoUrls = videos.val()
+    firebase.database().ref(`videos/`).on('value', allVideos => {
+      const videoUrls = allVideos.val()
       const videoArr = []
-
       for (const video in videoUrls) {
-        //console.warn(video)
-          videoArr.push(videoUrls[video].URL+','+videoUrls[video].title)
+          videoArr.push(videoUrls[video])
       }
+      this.setState({allVideos: videoArr})
+    })
 
-      //console.warn(formatted)
-      this.setState({videos: videoArr})
+    firebase.database().ref('videos/').orderByChild('postebBy').equalTo('coreyac').once('value', filteredVideos => {
+      const videoUrls = filteredVideos.val()
+      const videoArr = []
+      for (const video in videoUrls) {
+          videoArr.push(videoUrls[video])
+      }
+      this.setState({filteredVideos: videoArr})
     })
   }
 
   render() {
     return (
       <View style={styles.container}>
+      <Swiper
+          loop={false}
+          dot={<View style={styles.swiperDot} />}
+          activeDot={<View style={styles.swiperActiveDot} />}
+          style={styles.swiper}>
       <FlatList
-          data={this.state.videos}
+          data={this.state.allVideos}
           keyExtractor={item => item}
-          renderItem={this.renderVideoItem}
+          renderItem={this.renderAllItems}
           style={styles.list}
           //onScroll={this.handleScroll}
         >
         </FlatList>
+        <FlatList
+            data={this.state.filteredVideos}
+            keyExtractor={item => item}
+            renderItem={this.renderFilteredItems}
+            style={styles.list}
+            //onScroll={this.handleScroll}
+          >
+          </FlatList>
+        </Swiper>
       </View>
     );
   }
@@ -186,5 +213,27 @@ const styles = StyleSheet.create({
   helpLinkText: {
     fontSize: 14,
     color: '#2e78b7',
+  },
+  swiper: {
+    },
+  swiperDot: {
+      backgroundColor:'rgba(0, 0, 0, 0.3)',
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      marginLeft: 3,
+      marginRight: 3,
+      marginTop: 3,
+      marginBottom: 10
+  },
+  swiperActiveDot: {
+      backgroundColor: '#006A78',
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      marginLeft: 3,
+      marginRight: 3,
+      marginTop: 3,
+      marginBottom: 10
   },
 });
